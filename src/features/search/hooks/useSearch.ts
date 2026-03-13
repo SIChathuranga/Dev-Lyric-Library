@@ -23,7 +23,7 @@ function searchMockData(query: string, type: UseSearchParams['type']): SearchRes
           (s) =>
             normalize(s.title).includes(q) ||
             normalize(s.artistName).includes(q) ||
-            normalize(s.albumTitle).includes(q),
+            normalize(s.albumTitle ?? '').includes(q),
         );
 
   const artists =
