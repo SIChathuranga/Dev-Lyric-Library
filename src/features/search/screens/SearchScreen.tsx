@@ -28,7 +28,7 @@ const AVATAR_COLORS = [
 ];
 
 function avatarColor(seed: string): string {
-  const idx = seed.charCodeAt(0) % AVATAR_COLORS.length;
+  const idx = (seed.codePointAt(0) ?? 0) % AVATAR_COLORS.length;
   return AVATAR_COLORS[idx];
 }
 
