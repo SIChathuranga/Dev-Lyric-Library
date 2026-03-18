@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSavedStore } from '@/store/savedStore';
 import { lyricsRepository } from '@/services';
@@ -13,10 +14,23 @@ export interface SavedLyricWithData extends SavedLyric {
  * Returns saved lyrics with their complete lyrics content.
  */
 export const useSavedLyrics = () => {
-  const getSavedList = useSavedStore((state) => state.getSavedList);
-  const savedLyrics = getSavedList();
+  // Use stable selectors to prevent unnecessary re-renders
+  const savedMap = useSavedStore((state) => state.savedMap);
+  const savedOrder = useSavedStore((state) => state.savedOrder);
+  const hasHydrated = useSavedStore((state) => state.hasHydrated);
 
-  const savedSongIds = savedLyrics.map((lyric) => lyric.songId);
+  // Memoize the saved lyrics list to maintain stable reference
+  const savedLyrics = useMemo(() => {
+    return savedOrder
+      .map((id) => savedMap[id])
+      .filter(Boolean) as SavedLyric[];
+  }, [savedMap, savedOrder]);
+
+  // Memoize song IDs to prevent queryKey changes
+  const savedSongIds = useMemo(
+    () => savedLyrics.map((lyric) => lyric.songId),
+    [savedLyrics]
+  );
 
   // Fetch lyrics for all saved songs
   const lyricsQuery = useQuery({
@@ -33,16 +47,18 @@ export const useSavedLyrics = () => {
   });
 
   // Combine saved lyrics with their full lyrics data
-  const combinedData: SavedLyricWithData[] = savedLyrics.map((saved) => ({
-    ...saved,
-    lyrics: lyricsQuery.data?.find((l) => l.songId === saved.songId),
-  }));
+  const combinedData = useMemo((): SavedLyricWithData[] => {
+    return savedLyrics.map((saved) => ({
+      ...saved,
+      lyrics: lyricsQuery.data?.find((l) => l.songId === saved.songId),
+    }));
+  }, [savedLyrics, lyricsQuery.data]);
 
   return {
     data: combinedData,
     isLoading: lyricsQuery.isLoading,
     error: lyricsQuery.error,
     /** Whether the store has finished hydrating from storage */
-    isHydrated: useSavedStore((state) => state.hasHydrated),
+    isHydrated: hasHydrated,
   };
 };
