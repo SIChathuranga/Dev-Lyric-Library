@@ -5,14 +5,16 @@
  *   import { ArtistsStackParamList } from '@/app/navigationTypes';
  *   type Props = NativeStackScreenProps<ArtistsStackParamList, 'ArtistDetail'>;
  *
- * For shared screens (Lyrics) used across multiple stacks, use:
+ * For shared screens (Lyrics) used across multiple stacks, use a union type:
  *   import type { NativeStackScreenProps } from '@react-navigation/native-stack';
  *   import type { ArtistsStackParamList, SongsStackParamList, SearchStackParamList, SavedStackParamList } from '@/app/navigationTypes';
- *   type Props = NativeStackScreenProps<ArtistsStackParamList, 'Lyrics'>;
+ *   type Props =
+ *     | NativeStackScreenProps<ArtistsStackParamList, 'Lyrics'>
+ *     | NativeStackScreenProps<SongsStackParamList, 'Lyrics'>
+ *     | NativeStackScreenProps<SearchStackParamList, 'Lyrics'>
+ *     | NativeStackScreenProps<SavedStackParamList, 'Lyrics'>;
  *
- * Or use the shared LyricsParams type for manual route params extraction:
- *   import type { LyricsParams } from '@/app/navigationTypes';
- *   const { songId, songTitle, artistName } = route.params as LyricsParams;
+ * This provides full compile-time type safety without runtime casts.
  */
 import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
